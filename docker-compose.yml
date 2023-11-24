@@ -1,0 +1,80 @@
+version: "3.9"
+networks:
+  keycloak_network:
+    name: keycloak_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1
+
+services:
+  mysql_keycloak:
+    container_name: mysql_keycloak
+    image: "mysql:latest"
+    # image: "mysql:8.1.0"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysql",
+          "-h",
+          "localhost",
+          "-P",
+          "3310",
+          "-u",
+          "root",
+          "-e",
+          "SELECT 1",
+        ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    # volumes:
+    #   - ./backup/mysql_data:/var/lib/mysql
+    # volumes:
+    #   - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: keycloak
+      MYSQL_HOST: mysql_keycloak
+    networks:
+      - keycloak_network
+    ports:
+      - "3310:3306"
+
+  keycloak_w:
+    container_name: keycloak_w
+    build:
+      context: .
+      args:
+        KEYCLOAK_VERSION: latest
+        # KEYCLOAK_VERSION: 22.0.4
+    command: ["start", "--optimized"]
+    depends_on:
+      - "mysql_keycloak"
+    environment:
+      JAVA_OPTS_APPEND: -Dkeycloak.profile.feature.upload_scripts=enabled
+      KC_DB_PASSWORD: root
+      KC_DB_URL: jdbc:mysql://mysql_keycloak/keycloak
+      KC_DB_USERNAME: root
+      KC_HEALTH_ENABLED: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      # KC_HOSTNAME: localhost
+      # KC_HOSTNAME_PORT: 8180
+      KC_HOSTNAME_URL: http://172.30.0.1:8180
+      # KC_PROXY: reencrypt
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+      KEYCLOAK_WELCOME_THEME: keycloak
+    ports:
+      - "8180:8080"
+      - "8787:8787" # debug port
+    volumes:
+      - ./backup/keycloak/changelog.xml:/liquibase/changelog/changelog.xml
+      - ./backup/keycloak/keycloak_data:/opt/jboss/keycloak/standalone/data
+    networks:
+      - keycloak_network
+# volumes:
+#   mysql_data:
