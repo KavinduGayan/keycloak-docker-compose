@@ -1,1 +1,3 @@
 backup/mysql_data/*
+conf/server.crt
+conf/server.key

@@ -13,7 +13,7 @@ WORKDIR /opt/keycloak
 
 # If run the image in kubernetes, switch and active below line.
 # RUN /opt/keycloak/bin/kc.sh build --cache=ispn --cache-stack=kubernetes --health-enabled=true --metrics-enabled=true
-RUN /opt/keycloak/bin/kc.sh build --cache=ispn --health-enabled=true --metrics-enabled=true
+RUN /opt/keycloak/bin/kc.sh build --cache=ispn --health-enabled=true --metrics-enabled=true --spi-x509cert-lookup-provider=apache
 
 FROM quay.io/keycloak/keycloak:$KEYCLOAK_VERSION
 

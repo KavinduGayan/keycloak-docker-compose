@@ -63,17 +63,21 @@ services:
       KC_METRICS_ENABLED: "true"
       # KC_HOSTNAME: localhost
       # KC_HOSTNAME_PORT: 8180
-      KC_HOSTNAME_URL: http://172.30.0.1:8180
+      KC_HOSTNAME_URL: https://172.30.0.1:8443/
       # KC_PROXY: reencrypt
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: password
       KEYCLOAK_WELCOME_THEME: keycloak
+      KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/server.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/server.key
     ports:
       - "8180:8080"
-      - "8787:8787" # debug port
+      - "8443:8443"
     volumes:
       - ./backup/keycloak/changelog.xml:/liquibase/changelog/changelog.xml
       - ./backup/keycloak/keycloak_data:/opt/jboss/keycloak/standalone/data
+      - ./conf/server.crt:/opt/keycloak/conf/server.crt
+      - ./conf/server.key:/opt/keycloak/conf/server.key
     networks:
       - keycloak_network
 # volumes:
